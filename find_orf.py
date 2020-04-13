@@ -4,62 +4,8 @@ import sys
 import re
 
 def vet_nucleotide_sequence(sequence):
-    """
-    Return None if `sequence` is a valid RNA or DNA sequence, else raise exception. 
-
-    Parameters
-    ----------
-    sequence : str
-        A string representing a DNA or RNA sequence (upper or lower-case)
-
-    Returns
-    -------
-    None
-        Return nothing (None) if sequence is valid, otherwise raise an
-        exception.
-
-    Examples
-    --------
-    >>> vet_nucleotide_sequence('ACGTACGT') == None
-    True
-
-    >>> vet_nucleotide_sequence('not a valid sequence')
-    Traceback (most recent call last):
-        ...
-    Exception: Invalid sequence: 'not a valid sequence'
-
-    Don't allow mixing of DNA and RNA!
-    >>> vet_nucleotide_sequence('AUTGC')
-    Traceback (most recent call last):
-        ...
-    Exception: Invalid sequence: 'AUTGC'
-
-    Don't allow whitespace (or other characters) before, within, or after!
-    >>> vet_nucleotide_sequence(' ACGT ACGT ')
-    Traceback (most recent call last):
-        ...
-    Exception: Invalid sequence: ' ACGT ACGT '
-
-    But, an empty string should be deemed valid
-    >>> vet_nucleotide_sequence('') == None
-    True
-    """
-    ##########################################################################
-    ############################ EDIT CODE BELOW #############################
-    # `rna_pattern_str` and `dna_pattern_str` need to be regular expressions
-    # that will match any string of zero or more RNA and DNA bases,
-    # respectively (and only strings of zero or more RNA and DNA bases).
-    # Currently, `rna_pattern_str` and `dna_pattern_str` are strings of literal
-    # characters.
-    # These are valid regular expressions, but they will only match their
-    # respective strings exactly.
-    # Change `rna_pattern_str` and `dna_pattern_str` so that they will match
-    # any valid RNA and DNA sequence strings, respectively (and only strings of
-    # RNA and DNA bases).
-    # Read the docstring above for additional clues.
-    rna_pattern_str = r'AUCG'
-    dna_pattern_str = r'ATCG'
-    ##########################################################################
+    rna_pattern_str = r'^[AUCGaucg]*$'
+    dna_pattern_str = r'^[ATCGatcg]*$'
 
     rna_pattern = re.compile(rna_pattern_str)
     dna_pattern = re.compile(dna_pattern_str)
@@ -72,56 +18,8 @@ def vet_nucleotide_sequence(sequence):
         raise Exception("Invalid sequence: {0!r}".format(sequence))
 
 
-
 def vet_codon(codon):
-    """
-    Return None if `codon` is a valid RNA codon, else raise an exception. 
-
-    Parameters
-    ----------
-    codon : str
-        A string representing a codon (upper or lower-case)
-
-    Returns
-    -------
-    None
-        Return nothing (None) if codon is valid, otherwise raise an
-        exception.
-
-    Examples
-    --------
-    Valid codon
-    >>> vet_codon('AUG') == None
-    True
-
-    lower-case is also vaild 
-    >>> vet_codon('aug') == None
-    True
-
-    DNA is not valid
-    >>> vet_codon('ATG')
-    Traceback (most recent call last):
-        ...
-    Exception: Invalid codon: 'ATG'
-
-    A codon must be exactly 3 RNA bases long
-    >>> vet_codon('AUGG')
-    Traceback (most recent call last):
-        ...
-    Exception: Invalid codon: 'AUGG'
-    """
-    ##########################################################################
-    ############################ EDIT CODE BELOW #############################
-    # `codon_pattern_str` needs to be a regular expression that will match any
-    # codon (but only a string that is one codon).
-    # Currently, `codon_pattern_str` is only a string of literal characters.
-    # This is a valid regular expression, but it will only match 'AUG' exactly.
-    # Change `codon_pattern_str` so that it will match any valid codons, and
-    # only valid codons.
-    # Read the docstring above for additional clues.
-    codon_pattern_str = r'AUG'
-    ##########################################################################
-
+    codon_pattern_str = r'^[AUGCaucg]{3}$'
     codon_pattern = re.compile(codon_pattern_str)
 
     if codon_pattern.match(codon):
@@ -133,50 +31,7 @@ def vet_codon(codon):
 def find_first_orf(sequence,
         start_codons = ['AUG'],
         stop_codons = ['UAA', 'UAG', 'UGA']):
-    """
-    Return the first open-reading frame in the DNA or RNA `sequence`.
 
-    An open-reading frame (ORF) is the part of an RNA sequence that is
-    translated into a peptide. It must begin with a start codon, followed by
-    zero or more codons (triplets of nucleotides), and end with a stop codon.
-    If there are no ORFs in the sequence, an empty string is returned.
-
-    Parameters
-    ----------
-    sequence : str
-        A string representing a DNA or RNA sequence (upper or lower-case)
-    start_codons : list of strings
-        All possible start codons. Each codon must be a string of 3 RNA bases,
-        upper or lower-case.
-    stop_codons : list of strings
-        All possible stop codons. Each codon must be a string of 3 RNA bases,
-        upper or lower-case.
-
-    Returns
-    -------
-    str
-        An uppercase string of the first ORF found in the `sequence` that
-        starts with any one of the `start_codons` and ends with any one of the
-        `stop_codons`. If no ORF is found an empty string is returned.
-
-    Examples
-    --------
-    When the whole RNA sequence is an ORF:
-    >>> find_first_orf('AUGGUAUAA', ['AUG'], ['UAA'])
-    'AUGGUAUAA'
-
-    When the whole DNA sequence is an ORF:
-    >>> find_first_orf('ATGGTATAA', ['AUG'], ['UAA'])
-    'AUGGUAUAA'
-
-    When there is no ORF:
-    >>> find_first_orf('CUGGUAUAA', ['AUG'], ['UAA'])
-    ''
-
-    When there is are bases before and after ORF:
-    >>> find_first_orf('CCAUGGUAUAACC', ['AUG'], ['UAA'])
-    'AUGGUAUAA'
-    """
     # Make sure the sequence is valid
     vet_nucleotide_sequence(sequence)
 
@@ -190,28 +45,18 @@ def find_first_orf(sequence,
     seq = sequence.upper()
     starts = [c.upper() for c in start_codons]
     stops = [c.upper() for c in stop_codons]
+
     # Make sure seq is RNA
     seq = seq.replace('T', 'U')
 
-    ##########################################################################
-    ############################ EDIT CODE BELOW #############################
-    # `orf_pattern_str` needs to be a regular expression that will match an
-    # open reading frame within a string of RNA bases. At this point we know
-    # the string only contains uppercase A, C, G, and U.
-    # I recommend starting by hardcoding the standard start and stop codons
-    # (the ones listed as defaults for this function) into the regular
-    # expression. After you get that working, then try generalizing it to work
-    # for any start/stop codons.
-    # Currently, `orf_pattern_str` is only a string of literal characters. This
-    # is a valid regular expression, but it will only match 'AUGGUAUAA'
-    # exactly. Change `orf_pattern_str` so that it will match any open reading
-    # frame.
-    # Read the docstring above for additional clues.
-    orf_pattern_str = r'AUGGUAUAA'
-    ##########################################################################
+    # Hardicoding start and stop codons:
+    stac = '|'.join(start_codons)
+    stoc = '|'.join(stop_codons)
+    orf_pattern_str = r'('+stac+r')([AUCG]{3})*('+stoc+r')'
 
     # Create the regular expression object
     orf_pattern = re.compile(orf_pattern_str)
+
     # Search the sequence
     match_object = orf_pattern.search(seq)
     if match_object:
@@ -221,19 +66,17 @@ def find_first_orf(sequence,
 
 def parse_sequence_from_path(path):
     # Try to open the path to read from it, and handle exceptions if they
-    # arrise
+    # arise
     try:
         file_stream = open(path, 'r')
     except FileNotFoundError as e:
         sys.stderr.write("Sorry, couldn't find path {}".format(path))
         raise e
     except IsADirectoryError as e:
-        sys.stderr.write("Sorry, path {} appears to be a directory".format(
-                path))
+        sys.stderr.write("Sorry, path {} appears to be a directory".format(path))
         raise e
     except:
-        sys.stderr.write("Sorry, something went wrong when trying to open {}".format(
-                path))
+        sys.stderr.write("Sorry, something went wrong when trying to open {}".format(path))
         raise
     # If we've reached here, the file is open and ready to read
     sequence = ''
@@ -290,7 +133,5 @@ def main():
             stop_codons = args.stop_codons)
     sys.stdout.write('{}\n'.format(orf))
 
-
 if __name__ == '__main__':
     main()
-
